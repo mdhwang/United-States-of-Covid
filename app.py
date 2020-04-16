@@ -2,6 +2,7 @@
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
+import dash_bootstrap_components as dbc
 import pandas as pd
 from datetime import datetime, timedelta
 
@@ -26,8 +27,8 @@ try:
     state_data = pd.read_csv(states_url,dtype={"fips": str})
     print("Received latest NYT Data")
 except:
-    county_data = pd.read_csv('data/data/us-counties.csv')
-    state_data = pd.read_csv('data/data/us-states.csv')
+    county_data = pd.read_csv('data/data/us-counties.csv',dtype={"fips": str})
+    state_data = pd.read_csv('data/data/us-states.csv',dtype={"fips": str})
     print("Could not get latest NYT Data, falling back to local 4-3-20 data")
 county_data = county_data.dropna()
 state_data = state_data.dropna()
@@ -76,6 +77,13 @@ death_percent_diff = (death_delta) / death_day_prior
 
 latest = county_data.query("date=={}".format("'" + latestDate + "'"))
 
+
+total = state_data.groupby(state_data.date).sum()
+difference = total.diff()
+difference = difference.fillna(0)
+difference.columns = ['case_increase','death_increase']
+new = total.merge(difference, left_index=True, right_index=True)
+
 ################################################################################################
 ############ GENERATE PLOTS  ###################################################################
 ################################################################################################
@@ -92,6 +100,122 @@ fig_map = (px.choropleth_mapbox(latest, geojson=counties, locations='fips', colo
 
 
 
+# Cumulative Chart
+fig_combo = go.Figure()
+
+fig_combo.add_trace(go.Scatter(x=total.index, y=total.cases,
+                    mode='lines+markers',
+                               name='Total Cases USA',
+                         marker=dict(size=2, color='#d7191c',
+                                            line=dict(width=.5, color='#e36209')),
+                                text=total.index,
+                                hovertext=['Total Cases<br>{:,d}<br>'.format(
+                                    i) for i in total.cases],
+                                hovertemplate='<b>%{text}</b><br></br>' +
+                                              '%{hovertext}' +
+                                              '<extra></extra>'      
+                        ))
+
+fig_combo.add_trace(go.Scatter(x=total.index, y=total.deaths,
+                    mode='lines+markers',
+                               name = 'Total Deaths USA',
+                         marker=dict(size=2, color='#626262',
+                                            line=dict(width=.5, color='#626262')),
+                                text=total.index,
+                                hovertext=['Total Deaths<br>{:,d}<br>'.format(
+                                    i) for i in total.deaths],
+                                hovertemplate='<b>%{text}</b><br></br>' +
+                                              '%{hovertext}' +
+                                              '<extra></extra>'
+                              ))
+fig_combo.update_layout(
+    margin=go.layout.Margin(
+        l=10,
+        r=10,
+        b=10,
+        t=5,
+        pad=0
+    ),
+    yaxis=dict(
+        showline=False, linecolor='#272e3e',
+        zeroline=False,
+        gridcolor='rgba(203, 210, 211,.3)',
+        gridwidth=.1,
+    ),
+    xaxis=dict(
+        showline=False, linecolor='#272e3e',
+        showgrid=False,
+        gridcolor='rgba(203, 210, 211,.3)',
+        gridwidth=.1,
+        zeroline=False
+    ),
+    xaxis_tickformat='%b %d',
+    legend_orientation="h",
+    plot_bgcolor='#ffffff',
+    paper_bgcolor='#ffffff',
+    font=dict(color='#292929', size=10)
+)
+
+# Daily Increase Chart
+
+fig_daily = go.Figure()
+
+fig_daily.add_trace(go.Scatter(x=new.index, y=new.case_increase,
+                    mode='lines+markers',
+                               name='New Cases USA',
+                         marker=dict(size=2, color='#d7191c',
+                                            line=dict(width=.5, color='#e36209')),
+                                text=total.index,
+                                hovertext=['New Cases<br>{:,d}<br>'.format(
+                                    int(i)) for i in new.case_increase],
+                                hovertemplate='<b>%{text}</b><br></br>' +
+                                              '%{hovertext}' +
+                                              '<extra></extra>'
+                        
+                        
+                        
+                        ))
+
+fig_daily.add_trace(go.Scatter(x=new.index, y=new.death_increase,
+                    mode='lines+markers',
+                               name = 'New Deaths USA',
+                         marker=dict(size=2, color='#626262',
+                                            line=dict(width=.5, color='#626262')),
+                                text=total.index,
+                                hovertext=['New Deaths<br>{:,d}<br>'.format(
+                                    int(i)) for i in new.death_increase],
+                                hovertemplate='<b>%{text}</b><br></br>' +
+                                              '%{hovertext}' +
+                                              '<extra></extra>'
+                              ))
+fig_daily.update_layout(
+    margin=go.layout.Margin(
+        l=10,
+        r=10,
+        b=10,
+        t=5,
+        pad=0
+    ),
+    yaxis=dict(
+        showline=False, linecolor='#272e3e',
+        zeroline=False,
+        gridcolor='rgba(203, 210, 211,.3)',
+        gridwidth=.1,
+    ),
+#    yaxis_title="Total Confirmed Case Number",
+    xaxis=dict(
+        showline=False, linecolor='#272e3e',
+        showgrid=False,
+        gridcolor='rgba(203, 210, 211,.3)',
+        gridwidth=.1,
+        zeroline=False
+    ),
+    xaxis_tickformat='%b %d',
+    legend_orientation="h",
+    plot_bgcolor='#ffffff',
+    paper_bgcolor='#ffffff',
+    font=dict(color='#292929', size=10)
+)
 
 
 
@@ -130,15 +254,6 @@ app.layout = html.Div(style={'backgroundColor': '#fafbfd'},
 
                     html.H4(
                         children='Dashboard tracking number of cases in the USA based on NYT published data.',
-                        style={
-                            'textAlign': 'center',
-                            }
-                    ),
-
-                    html.Div(
-                        children=[
-                            html.A('NYT Github',href='https://github.com/nytimes/covid-19-data')
-                        ],
                         style={
                             'textAlign': 'center',
                             }
@@ -246,7 +361,7 @@ app.layout = html.Div(style={'backgroundColor': '#fafbfd'},
             # BODY START
 
             html.Div(
-            id='dcc-plot',
+            id='dcc-map',
             style={'marginLeft': '1.5%', 'marginRight': '1.5%', 'backgroundColor': '#ffffff',
                    'marginBottom': '.8%', 'marginTop': '.5%',
                    'box-shadow':'0px 0px 10px #ededee', 'border': '1px solid #ededee'
@@ -266,6 +381,63 @@ app.layout = html.Div(style={'backgroundColor': '#fafbfd'},
                                   ]),
                  ]),
 
+            html.Div(
+            id='dcc-plot',
+            style={'marginLeft': '1.5%', 'marginRight': '1.5%', 'backgroundColor': '#ffffff',
+                   'marginBottom': '.8%', 'marginTop': '.5%',
+                   'box-shadow':'0px 0px 10px #ededee', 'border': '1px solid #ededee'
+                },
+                 children=[
+                     html.Div(
+                         style={'width': '49.18%', 'display': 'inline-block',
+                                'marginRight': '.8%', 
+                                #'box-shadow':'0px 0px 10px #ededee', 'border': '1px solid #ededee'
+                                },
+                         children=[
+                                  html.H5(
+                                    id='dcc-num-graph-head',
+                                    style={'textAlign': 'center', 'backgroundColor': '#ffffff',
+                                           'color': '#292929', 'padding': '1rem', 'marginBottom': '0','marginTop': '0'},
+                                    children='Cases / Deaths USA'),
+                                  dcc.Graph(
+                                    style={'height': '300px'}, 
+                                    figure=fig_combo),
+                                    dbc.Tooltip(
+                                    '''
+                                    This chart represents the cumulative number of cases and deaths reported in the USA due to COVID-19.
+                                    ''',
+                                              target='dcc-num-graph-head',
+                                              style={"font-size":"1em"},
+                                             ),
+                                  ]),
+                     html.Div(
+                         style={'width': '49.18%', 'display': 'inline-block',
+                                
+                                #'box-shadow':'0px 0px 10px #ededee', 'border': '1px solid #ededee'
+                                },
+                         children=[
+                                  html.H5(
+                                    id='dcc-rate-graph-head',
+                                    style={'textAlign': 'center', 'backgroundColor': '#ffffff',
+                                           'color': '#292929', 'padding': '1rem', 'marginBottom': '0','marginTop': '0'},
+                                    children='Daily Increases USA'),
+                                  dcc.Graph(
+                                    style={'height': '300px'}, 
+                                    figure=fig_daily),
+                                  dbc.Tooltip(
+                                    '''
+                                    This chart represents the daily number of increases in cases and deaths reported in the USA due to COVID-19.
+                                    ''',
+                                              target='dcc-rate-graph-head',
+                                              style={"font-size":"1em"},
+                                             ),
+                                  ]),
+                     ]),
+
+
+
+
+
             # FOOTER START
             html.Div(
                 children=[
@@ -274,6 +446,8 @@ app.layout = html.Div(style={'backgroundColor': '#fafbfd'},
                     html.Hr(),
                     html.P('This is my first Dash App - project was heavily influenced by the below repo'),
                     html.A('Perishleaf Project', href='https://github.com/Perishleaf/data-visualisation-scripts/tree/master/dash-2019-coronavirus',target='_blank'),
+                    html.Br(),
+                    html.A('NYT Github',href='https://github.com/nytimes/covid-19-data'),
                 ]
             )
 
