@@ -5,6 +5,16 @@ import dash_html_components as html
 import pandas as pd
 from datetime import datetime, timedelta
 
+import plotly.express as px
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
+import json
+geo_json_path = 'data/geo_data/geojson-counties-fips.json'
+with open(geo_json_path,'r') as response:
+    counties = json.load(response)
+
+
 ################################################################################################
 ############ GATHER LATEST DATA ################################################################
 ################################################################################################
@@ -23,28 +33,7 @@ county_data = county_data.dropna()
 state_data = state_data.dropna()
 
 
-
-################################################################################################
-############ START DASH APP ####################################################################
-################################################################################################
-
-BootyStrap = "https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-
-app = dash.Dash(__name__, 
-                external_stylesheets=[BootyStrap],
-                meta_tags=[
-                    {"name": "author", "content": "Matt Hwang"}
-                ]
-            )
-
-app.title = 'United States of COVID-19'
-
-# server = app.server#
-# app.config['suppress_callback_exceptions'] = True # This is to prevent app crash when loading since we have plot that only render when user clicks.
-
 # CALCULATED VALUES
-
-latest = county_data.query("date=='2020-04-13'")
 
 latestDate = county_data.date.max()
 latest_dt = datetime.strptime(latestDate, '%Y-%m-%d')
@@ -84,6 +73,45 @@ else:
 
 death_delta = confirmed_deaths - death_day_prior
 death_percent_diff = (death_delta) / death_day_prior
+
+latest = county_data.query("date=={}".format("'" + latestDate + "'"))
+
+################################################################################################
+############ GENERATE PLOTS  ###################################################################
+################################################################################################
+
+
+fig_map = (px.choropleth_mapbox(latest, geojson=counties, locations='fips', color='cases',
+                           color_continuous_scale="matter",
+                           range_color=(0, 100),
+                           mapbox_style="carto-positron",
+                           zoom=3, center = {"lat": 37.0902, "lon": -95.7129},
+                           opacity=1,
+                           labels={'county':'county'}
+                          ))
+
+
+
+
+
+
+################################################################################################
+############ START DASH APP ####################################################################
+################################################################################################
+
+BootyStrap = "https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+
+app = dash.Dash(__name__, 
+                external_stylesheets=[BootyStrap],
+                meta_tags=[
+                    {"name": "author", "content": "Matt Hwang"}
+                ]
+            )
+
+app.title = 'United States of COVID-19'
+
+# server = app.server#
+# app.config['suppress_callback_exceptions'] = True # This is to prevent app crash when loading since we have plot that only render when user clicks.
 
 
 
@@ -217,29 +245,26 @@ app.layout = html.Div(style={'backgroundColor': '#fafbfd'},
 
             # BODY START
 
-            dcc.Graph(
-                id='example-graph',
-                figure={
-                    'data': [
-                        {'x': state_data.state, 'y': state_data.cases, 'type': 'bar', 'name': 'States'},
-                    ],
-                    'layout': {
-                        'title': 'Dash Data Visualization'
-                    }
-                }
-            ),
-
-            dcc.Graph(
-                id='map',
-                figure={
-                    'data': [
-                        {'x': state_data.state, 'y': state_data.cases, 'type': 'chorop', 'name': 'States'},
-                    ],
-                    'layout': {
-                        'title': 'Dash Data Visualization'
-                    }
-                }
-            ),
+            html.Div(
+            id='dcc-plot',
+            style={'marginLeft': '1.5%', 'marginRight': '1.5%', 'backgroundColor': '#ffffff',
+                   'marginBottom': '.8%', 'marginTop': '.5%',
+                   'box-shadow':'0px 0px 10px #ededee', 'border': '1px solid #ededee'
+                },
+                 children=[
+                     html.Div(
+                         style={'width': '97%', 'display': 'inline-block',
+                                },
+                         children=[
+                                  html.H2(
+                                    style={'textAlign': 'center', 'backgroundColor': '#ffffff',
+                                           'color': '#292929', 'padding': '1rem', 'marginBottom': '0','marginTop': '0'},
+                                    children='Case Severity Per County'),
+                                  dcc.Graph(
+                                    style={'height': '600px'}, 
+                                    figure=fig_map),
+                                  ]),
+                 ]),
 
             # FOOTER START
             html.Div(
