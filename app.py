@@ -48,20 +48,42 @@ latest = county_data.query("date=='2020-04-13'")
 
 latestDate = county_data.date.max()
 latest_dt = datetime.strptime(latestDate, '%Y-%m-%d')
-latest_dt_day = latest_dt.days
-latest_dt_month = latest_dt.month
-latest_dt_year = latest_dt.year
-confirmedCases = county_data.query("date=={}".format("'"+latestDate+"'")).cases.sum()
-daysOutbreak = (latest_dt - datetime.strptime('2019-12-31', '%Y-%m-%d')).days
+days_since_outbreak = (latest_dt - datetime.strptime('2019-12-31', '%Y-%m-%d')).days
+days_since_USA = (latest_dt - datetime.strptime('2020-01-21', '%Y-%m-%d')).days
+day_prior = datetime.strftime((latest_dt - timedelta(days=1)),'%Y-%m-%d')
+two_prior = datetime.strftime((latest_dt - timedelta(days=2)),'%Y-%m-%d')
+
+confirmed_cases = county_data.query("date=={}".format("'" + latestDate + "'")).cases.sum()
+cases_day_prior = county_data.query("date=={}".format("'" + day_prior + "'")).cases.sum()
+cases_two_prior = county_data.query("date=={}".format("'" + two_prior + "'")).cases.sum()
+
+case_rate = (confirmed_cases - cases_day_prior) / cases_day_prior
+case_prior_rate = (cases_day_prior - cases_two_prior) / cases_two_prior
+case_rate_delta = (case_rate - case_prior_rate) / case_prior_rate
+if case_rate_delta < 0:
+    case_rate_delta_s = '{:.2%}'.format(case_rate_delta)
+else:
+    case_rate_delta_s = '+ {:.2%}'.format(case_rate_delta)
+    
+case_delta = confirmed_cases - cases_day_prior
+case_percent_diff = (case_delta) / cases_day_prior
 
 
+confirmed_deaths = county_data.query("date=={}".format("'" + latestDate + "'")).deaths.sum()
+death_day_prior = county_data.query("date=={}".format("'" + day_prior + "'")).deaths.sum()
+death_two_prior = county_data.query("date=={}".format("'" + two_prior + "'")).deaths.sum()
 
-plusConfirmedNum = 1
-plusPercentNum1 = 1
-plusDeathNum = 1
-plusPercentNum3 = 1
-deathsCases = 1
+death_rate = (confirmed_deaths - death_day_prior) / death_day_prior
+death_prior_rate = (death_day_prior - death_two_prior) / death_two_prior
+death_rate_delta = (death_rate - death_prior_rate) / death_prior_rate
+if death_rate_delta < 0:
+    death_rate_delta_s = '{:.2%}'.format(death_rate_delta)
+else:
+    death_rate_delta_s = '+ {:.2%}'.format(death_rate_delta)
+    
 
+death_delta = confirmed_deaths - death_day_prior
+death_percent_diff = (death_delta) / death_day_prior
 
 
 
@@ -107,7 +129,7 @@ app.layout = html.Div(style={'backgroundColor': '#fafbfd'},
                             The WHO declared the outbreak to be a Public Health Emergency of International Concern on 
                             Jan 30, 2020 and recognized it as a pandemic on Mar 11, 2020. 
                             
-                            As of **{}**, there are **{:,d}** confirmed cases in the USA.'''.format(latestDate, confirmedCases),
+                            As of **{}**, there are **{:,d}** confirmed cases in the USA.'''.format(latestDate, confirmed_cases),
                         )
                         ),
                         style={
@@ -139,28 +161,35 @@ app.layout = html.Div(style={'backgroundColor': '#fafbfd'},
                                 'marginRight': '.8%', 'verticalAlign': 'top', 
                                 'box-shadow':'0px 0px 10px #ededee', 'border': '1px solid #ededee','border-top': '#2674f6 solid .2rem',},
                               children=[
-                                  html.H3(style={'textAlign': 'center',
+                                  
+                                  html.H2(style={'textAlign': 'center',
                                                  'fontWeight': 'bold', 'color': '#2674f6'},
                                                children=[
-                                                   html.P(style={'color': '#ffffff', 'padding': '.5rem'},
-                                                              children='xxxx xx xxx xxxx xxx xxxxx'),
-                                                   '{}'.format(daysOutbreak),
+                                                   html.P(style={'color': '#2674f6', 'padding': '.5rem'},
+                                                              children='Days Since Outbreak'),
+                                                   '{}'.format(days_since_outbreak),
                                                ]),
-                                  html.H5(style={'textAlign': 'center', 'color': '#2674f6', 'padding': '.1rem'},
-                                               children="days since outbreak")
+
+                                    html.Br(),
+                                    html.H4(style={'textAlign': 'center', 'fontWeight': 'bold','color': '#2674f6', 'padding': '.1rem'},
+                                        children="{}".format(days_since_USA)),
+                                    html.H5(style={'textAlign': 'center', 'color': '#2674f6', 'padding': '.1rem'},
+                                        children="Days since first case occurance in USA".format(days_since_USA))
                                        ]),
                      html.Div(
                          style={'width': '32%', 'backgroundColor': '#ffffff', 'display': 'inline-block',
                                 'marginRight': '.8%', 'verticalAlign': 'top', 
                                 'box-shadow':'0px 0px 10px #ededee', 'border': '1px solid #ededee','border-top': '#d7191c solid .2rem',},
                               children=[
-                                  html.H3(style={'textAlign': 'center',
+                                  html.H4(style={'textAlign': 'center',
                                                  'fontWeight': 'bold', 'color': '#d7191c'},
                                                 children=[
                                                     html.P(style={'padding': '.5rem'},
-                                                              children='+ {:,d} in the past 24h ({:.1%})'.format(plusConfirmedNum, plusPercentNum1)),
-                                                    '{:,d}'.format(
-                                                        confirmedCases)
+                                                              children='+ {:,d} cases in the past 24h ({:.2%}) increase in cases'.format(case_delta, case_percent_diff)),
+                                                    html.P(style={'padding': '.5rem'},
+                                                              children='({}) change in rate'.format(case_rate_delta_s)),
+                                                              
+                                                        '{:,d}'.format(confirmed_cases)
                                                          ]),
                                   html.H5(style={'textAlign': 'center', 'color': '#d7191c', 'padding': '.1rem'},
                                                children="confirmed cases")
@@ -170,16 +199,20 @@ app.layout = html.Div(style={'backgroundColor': '#fafbfd'},
                                 'verticalAlign': 'top', 
                                 'box-shadow':'0px 0px 10px #ededee', 'border': '1px solid #ededee','border-top': '#6c6c6c solid .2rem',},
                               children=[
-                                  html.H3(style={'textAlign': 'center',
+                                  html.H4(style={'textAlign': 'center',
                                                        'fontWeight': 'bold', 'color': '#6c6c6c'},
                                                 children=[
                                                     html.P(style={'padding': '.5rem'},
-                                                              children='+ {:,d} in the past 24h ({:.1%})'.format(plusDeathNum, plusPercentNum3)),
-                                                    '{:,d}'.format(deathsCases)
+                                                              children='+ {:,d} deaths in the past 24h ({:.2%}) increase in deaths'.format(death_delta, death_percent_diff)),
+                                                    html.P(style={'padding': '.5rem'},
+                                                              children='({}) change in rate'.format(death_rate_delta_s)),
+                                                             
+                                                    '{:,d}'.format(confirmed_deaths)
                                                 ]),
                                   html.H5(style={'textAlign': 'center', 'color': '#6c6c6c', 'padding': '.1rem'},
                                                children="death cases")
-                                       ])
+                                       ]),
+                      html.Hr(),    
                           ]),
 
             # BODY START
@@ -211,6 +244,9 @@ app.layout = html.Div(style={'backgroundColor': '#fafbfd'},
             # FOOTER START
             html.Div(
                 children=[
+                    html.Br(),
+                    html.Br(),
+                    html.Hr(),
                     html.P('This is my first Dash App - project was heavily influenced by the below repo'),
                     html.A('Perishleaf Project', href='https://github.com/Perishleaf/data-visualisation-scripts/tree/master/dash-2019-coronavirus',target='_blank'),
                 ]
