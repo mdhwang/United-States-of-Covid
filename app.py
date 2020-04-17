@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import dash
+import dash_table
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
@@ -83,6 +84,15 @@ difference = total.diff()
 difference = difference.fillna(0)
 difference.columns = ['case_increase','death_increase']
 new = total.merge(difference, left_index=True, right_index=True)
+
+#Table Summary Data
+latest_state_data = state_data.query("date=={}".format("'" + latestDate + "'"))
+sum_cols = ['state','cases','deaths']
+state_summary = latest_state_data[sum_cols].copy()
+state_summary.index = latest_state_data.state
+
+cols = ['state','county','cases','deaths']
+county_summary = latest[cols].copy()
 
 ################################################################################################
 ############ GENERATE PLOTS  ###################################################################
@@ -493,30 +503,78 @@ app.layout = html.Div(style={'backgroundColor': '#fafbfd'},
                                               style={"font-size":"1em"},
                                              ),
                                   ]),
-                     html.Div(
-                         style={'width': '34%', 'display': 'inline-block',
-                                
-                                #'box-shadow':'0px 0px 10px #ededee', 'border': '1px solid #ededee'
-                                },
-                         children=[
-                                  html.H5(
-                                    id='dcc-rate2-graph-head',
-                                    style={'textAlign': 'center', 'backgroundColor': '#ffffff',
-                                           'color': '#292929', 'padding': '1rem', 'marginBottom': '0','marginTop': '0'},
-                                    children='Daily Increases USA'),
-                                  dcc.Graph(
-                                    style={'height': '300px'}, 
-                                    figure=fig_daily),
-                                  dbc.Tooltip(
-                                    '''
-                                    This chart represents the daily number of increases in cases and deaths reported in the USA due to COVID-19.
-                                    ''',
-                                              target='dcc-rate2-graph-head',
-                                              style={"font-size":"1em"},
-                                             ),
-                                  ]),
-                     ]),
+                     html.Div(style={'width': '34%', 'display': 'inline-block', 'verticalAlign': 'top',
+                                     'box-shadow':'0px 0px 10px #ededee', 'border': '1px solid #ededee'},
+                              children=[
+                                  html.H5(style={'textAlign': 'center', 'backgroundColor': '#ffffff',
+                                                 'color': '#292929', 'padding': '1rem', 'marginBottom': '0', 'marginTop': '0'},
+                                               children='Cases Summary by Location'),
+                                  dcc.Tabs(
+                                      id="tabs-table",
+                                      value='States',
+                                      parent_className='custom-tabs',
+                                      className='custom-tabs-container',
+                                      children=[
+                                          dcc.Tab(label='States',
+                                              value='States',
+                                              className='custom-tab',
+                                              selected_className='custom-tab--selected',
+                                              style={'textAlign':'right'},
+                                              children=[
+                                                  dash_table.DataTable(
+                                                      id='datatable-interact-location',
+                                                      columns = [{"name": i, "id": i} for i in state_summary.columns],
+                                                      data=state_summary.to_dict("rows"),
+                                                      sort_action="native",
+                                                      style_as_list_view=True,
+                                                      style_cell={'font_family': 'Arial',
+                                                                  'font_size': '1rem',
+                                                                  'padding': '.1rem',
+                                                                  'backgroundColor': '#ffffff', },
+                                                      fixed_rows={
+                                                          'headers': True, 'data': 0},
+                                                      style_table={'minHeight': '800px',
+                                                                   'height': '800px',
+                                                                   'maxHeight': '800px',
+                                                                   'overflowX': 'auto',
+                                                                   },
+                                                      style_header={'backgroundColor': '#ffffff',
+                                                                    'fontWeight': 'bold'},
+                                                  )
+                                            ]),
 
+                                            dcc.Tab(label='Counties',
+                                              value='Counties',
+                                              className='custom-tab',
+                                              selected_className='custom-tab--selected',
+                                              style={'textAlign':'right'},
+                                              children=[
+                                                  dash_table.DataTable(
+                                                      id='datatable-interact-location2',
+                                                      columns = [{"name": i, "id": i} for i in county_summary.columns],
+                                                      data=county_summary.to_dict("rows"),
+                                                      sort_action="native",
+                                                      style_as_list_view=True,
+                                                      style_cell={'font_family': 'Arial',
+                                                                  'font_size': '1rem',
+                                                                  'padding': '.1rem',
+                                                                  'backgroundColor': '#ffffff', },
+                                                      fixed_rows={
+                                                          'headers': True, 'data': 0},
+                                                      style_table={'minHeight': '800px',
+                                                                   'height': '800px',
+                                                                   'maxHeight': '800px',
+                                                                   'overflowX': 'auto',
+                                                                   },
+                                                      style_header={'backgroundColor': '#ffffff',
+                                                                    'fontWeight': 'bold'},
+                                                  )
+                                            ]),
+                                          ]
+                                       )
+                                    ]),
+                              ]),
+                     
 
 
             # FOOTER START
