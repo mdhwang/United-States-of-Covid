@@ -242,7 +242,7 @@ county_pop = pop.to_dict()
 
 county_data = county_data.merge(pop, how='inner',on='fips')
 
-county_data['percent_pop'] = 10*county_data.cases/county_data.Population
+county_data['percent_pop'] = round(10*county_data.cases/county_data.Population,2)
 latest2 = county_data.query("date=={}".format("'" + latestDate + "'"))
 top = latest2.percent_pop.max()
 
@@ -253,7 +253,6 @@ fig_pop = px.choropleth_mapbox(latest2, geojson=counties, locations='fips', colo
                            mapbox_style="carto-positron",
                            zoom=3, center = {"lat": 37.0902, "lon": -95.7129},
                            opacity=1,
-                           labels={'county':'county'}
                           )
 fig_pop.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
 
@@ -336,7 +335,7 @@ app.layout = html.Div(style={'backgroundColor': '#fafbfd'},
 
             html.Div(
             id="number-plate",
-            style={'marginLeft': '1.5%', 'marginRight': '1.5%', 'marginBottom': '.8%'},
+            style={'textAlign': 'center','marginLeft': '1.5%', 'marginRight': '1.5%', 'marginBottom': '.8%'},
                  children=[
                      #html.Hr(),
                      html.Div(
@@ -413,11 +412,17 @@ app.layout = html.Div(style={'backgroundColor': '#fafbfd'},
                          children=[
                                   html.H2(
                                     style={'textAlign': 'center', 'backgroundColor': '#ffffff',
-                                           'color': '#292929', 'padding': '1rem', 'marginBottom': '0','marginTop': '0'},
-                                    children='Case Severity Per County'),
+                                           'color': '#292929', 'padding': '0.5rem', 'marginBottom': '0','marginTop': '0'},
+                                    children='Percentage of Population Infected Per County'),
+                                  html.H4(
+                                    style={'textAlign': 'center', 'backgroundColor': '#ffffff',
+                                           'color': '#292929', 'padding': '0.5rem', 'marginBottom': '0','marginTop': '0'},
+                                    children='''Calculated percent of population per county based on latest confirmed cases 
+                                                over estimated population based on 2019 US Census data.'''),
+                                  html.Hr(),
                                   dcc.Graph(
                                     style={'height': '600px'}, 
-                                    figure=fig_map),
+                                    figure=fig_pop),
                                   ]),
                  ]),
 
@@ -428,15 +433,19 @@ app.layout = html.Div(style={'backgroundColor': '#fafbfd'},
                    'box-shadow':'0px 0px 10px #ededee', 'border': '1px solid #ededee'
                 },
                  children=[
+                    html.H2(
+                        style={'textAlign': 'center', 'backgroundColor': '#ffffff',
+                                'color': '#292929', 'paddingTop': '1rem', 'marginBottom': '0','marginTop': '0'},
+                        children='COVID Case and Death Trend Timeline'),
+                    html.Hr(),
                      html.Div(
                          style={'width': '49.18%', 'display': 'inline-block',
                                 'marginRight': '.8%', 
-                                #'box-shadow':'0px 0px 10px #ededee', 'border': '1px solid #ededee'
                                 },
                          children=[
-                                  html.H5(
+                                  html.H4(
                                     id='dcc-num-graph-head',
-                                    style={'textAlign': 'center', 'backgroundColor': '#ffffff',
+                                    style={'textAlign': 'center', 'text-decoration': 'underline','backgroundColor': '#ffffff',
                                            'color': '#292929', 'padding': '1rem', 'marginBottom': '0','marginTop': '0'},
                                     children='Cases / Deaths USA'),
                                   dcc.Graph(
@@ -451,15 +460,12 @@ app.layout = html.Div(style={'backgroundColor': '#fafbfd'},
                                              ),
                                   ]),
                      html.Div(
-                         style={'width': '49.18%', 'display': 'inline-block',
-                                
-                                #'box-shadow':'0px 0px 10px #ededee', 'border': '1px solid #ededee'
-                                },
+                         style={'width': '49.18%', 'display': 'inline-block',},
                          children=[
-                                  html.H5(
+                                  html.H4(
                                     id='dcc-rate-graph-head',
-                                    style={'textAlign': 'center', 'backgroundColor': '#ffffff',
-                                           'color': '#292929', 'padding': '1rem', 'marginBottom': '0','marginTop': '0'},
+                                    style={'textAlign': 'center', 'backgroundColor': '#ffffff','text-decoration': 'underline',
+                                           'color': '#292929', 'padding': '.1rem', 'marginBottom': '0','marginTop': '0'},
                                     children='Daily Increases USA'),
                                   dcc.Graph(
                                     style={'height': '300px'}, 
@@ -481,6 +487,11 @@ app.layout = html.Div(style={'backgroundColor': '#fafbfd'},
                    'box-shadow':'0px 0px 10px #ededee', 'border': '1px solid #ededee'
                 },
                  children=[
+                     html.H2(
+                        style={'textAlign': 'center', 'backgroundColor': '#ffffff',
+                                'color': '#292929', 'paddingTop': '1rem', 'marginBottom': '0','marginTop': '0'},
+                        children='COVID-19 Case and Death Metrics US Counties'),
+                    html.Hr(),
                      html.Div(
                          style={'width': '64%', 'display': 'inline-block',
                                 'marginRight': '.8%', 
@@ -490,14 +501,14 @@ app.layout = html.Div(style={'backgroundColor': '#fafbfd'},
                                   html.H5(
                                     id='dcc-map-graph-head',
                                     style={'textAlign': 'center', 'backgroundColor': '#ffffff',
-                                           'color': '#292929', 'padding': '1rem', 'marginBottom': '0','marginTop': '0'},
-                                    children='Percentage of Population Infected'),
+                                           'color': '#292929', 'padding': '.5rem', 'marginBottom': '0','marginTop': '0'},
+                                    children='Case Severity Per County'),
                                   dcc.Graph(
-                                    style={'height': '300px'}, 
-                                    figure=fig_pop),
+                                    style={'height': '500px'}, 
+                                    figure=fig_map),
                                     dbc.Tooltip(
                                     '''
-                                    This chart represents the cumulative number of cases and deaths reported in the USA due to COVID-19.
+                                    This map calculates percentage of population with confirmed cases based on 2019 US census data.
                                     ''',
                                               target='dcc-map-graph-head',
                                               style={"font-size":"1em"},
@@ -519,7 +530,8 @@ app.layout = html.Div(style={'backgroundColor': '#fafbfd'},
                                               value='States',
                                               className='custom-tab',
                                               selected_className='custom-tab--selected',
-                                              style={'textAlign':'right'},
+                                              style={'textAlign':'center',
+                                                    'fontWeight': 'bold',},
                                               children=[
                                                   dash_table.DataTable(
                                                       id='datatable-interact-location',
@@ -530,16 +542,29 @@ app.layout = html.Div(style={'backgroundColor': '#fafbfd'},
                                                       style_cell={'font_family': 'Arial',
                                                                   'font_size': '1rem',
                                                                   'padding': '.1rem',
-                                                                  'backgroundColor': '#ffffff', },
+                                                                  'backgroundColor': '#ffffff',
+                                                                  'width': '200px',
+                                                                  'textAlign':'right', 
+                                                                  'overflow': 'hidden',
+                                                                    'textOverflow': 'ellipsis',
+                                                                    'maxWidth': 0, },
                                                       fixed_rows={
                                                           'headers': True, 'data': 0},
-                                                      style_table={'minHeight': '800px',
-                                                                   'height': '800px',
-                                                                   'maxHeight': '800px',
-                                                                   'overflowX': 'auto',
+                                                      style_table={'minHeight': '400px',
+                                                                   'height': '400px',
+                                                                   'maxHeight': '400px',
+                                                                   'overflowX': 'scroll',
                                                                    },
                                                       style_header={'backgroundColor': '#ffffff',
                                                                     'fontWeight': 'bold'},
+                                                      style_cell_conditional=[
+                                                            {'if': {'column_id': 'state'},
+                                                            'width': '50%'},
+                                                            {'if': {'column_id': 'cases'},
+                                                            'width': '25%'},
+                                                            {'if': {'column_id': 'deaths'},
+                                                            'width': '25%'},
+                                                        ]
                                                   )
                                             ]),
 
@@ -547,7 +572,8 @@ app.layout = html.Div(style={'backgroundColor': '#fafbfd'},
                                               value='Counties',
                                               className='custom-tab',
                                               selected_className='custom-tab--selected',
-                                              style={'textAlign':'right'},
+                                              style={'textAlign':'center',
+                                                    'fontWeight': 'bold',},
                                               children=[
                                                   dash_table.DataTable(
                                                       id='datatable-interact-location2',
@@ -558,13 +584,18 @@ app.layout = html.Div(style={'backgroundColor': '#fafbfd'},
                                                       style_cell={'font_family': 'Arial',
                                                                   'font_size': '1rem',
                                                                   'padding': '.1rem',
-                                                                  'backgroundColor': '#ffffff', },
+                                                                  'backgroundColor': '#ffffff',
+                                                                  'width': '200px,',
+                                                                  'textAlign':'right', 
+                                                                  'overflow': 'hidden',
+                                                                    'textOverflow': 'ellipsis',
+                                                                    'maxWidth': 0,},
                                                       fixed_rows={
                                                           'headers': True, 'data': 0},
-                                                      style_table={'minHeight': '800px',
-                                                                   'height': '800px',
-                                                                   'maxHeight': '800px',
-                                                                   'overflowX': 'auto',
+                                                      style_table={'minHeight': '400px',
+                                                                   'height': '400px',
+                                                                   'maxHeight': '400px',
+                                                                   'overflowX': 'scroll',
                                                                    },
                                                       style_header={'backgroundColor': '#ffffff',
                                                                     'fontWeight': 'bold'},
@@ -575,20 +606,23 @@ app.layout = html.Div(style={'backgroundColor': '#fafbfd'},
                                     ]),
                               ]),
                      
-
+            html.Div(style={'textAlign': 'center'},
+                children=[
+                    html.H3('Stay safe out in them streets.  Keep your distance and wash your hands.'),
+                    html.A('www.THWDesigns.com',href='https://thwdesigns.com'),
+                ]),
 
             # FOOTER START
-            html.Div(
+            html.Div(style={'textAlign': 'center'},
                 children=[
                     html.Br(),
                     html.Br(),
                     html.Hr(),
-                    html.P('This is my first Dash App - project was heavily influenced by the below repo'),
+                    html.P('Shout out to the below GitHub repos for inspiration.'),
                     html.A('Perishleaf Project', href='https://github.com/Perishleaf/data-visualisation-scripts/tree/master/dash-2019-coronavirus',target='_blank'),
                     html.Br(),
                     html.A('NYT Github',href='https://github.com/nytimes/covid-19-data'),
-                ]
-            )
+                ]),
 
 ])
 
