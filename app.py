@@ -88,15 +88,17 @@ new = total.merge(difference, left_index=True, right_index=True)
 ############ GENERATE PLOTS  ###################################################################
 ################################################################################################
 
+max_cases = latest.cases.max()
 
 fig_map = (px.choropleth_mapbox(latest, geojson=counties, locations='fips', color='cases',
                            color_continuous_scale="matter",
-                           range_color=(0, 100),
+                           range_color=(0, max_cases),
                            mapbox_style="carto-positron",
                            zoom=3, center = {"lat": 37.0902, "lon": -95.7129},
                            opacity=1,
                            labels={'county':'county'}
                           ))
+fig_map.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
 
 
 
@@ -150,6 +152,7 @@ fig_combo.update_layout(
         zeroline=False
     ),
     xaxis_tickformat='%b %d',
+    hovermode='x',
     legend_orientation="h",
     plot_bgcolor='#ffffff',
     paper_bgcolor='#ffffff',
@@ -211,11 +214,38 @@ fig_daily.update_layout(
         zeroline=False
     ),
     xaxis_tickformat='%b %d',
+    hovermode='x',
     legend_orientation="h",
     plot_bgcolor='#ffffff',
     paper_bgcolor='#ffffff',
     font=dict(color='#292929', size=10)
 )
+
+
+census = pd.read_csv('data/co-est2019-alldata.csv',encoding = 'latin-1',dtype={"STATE": str,"COUNTY":str})
+census = census.query('COUNTY!="000"')
+census["fips"] = census.STATE + census.COUNTY
+pop = census[['POPESTIMATE2019']].copy()
+pop.columns = ['Population']
+pop.index = census.fips
+county_pop = pop.to_dict()
+
+county_data = county_data.merge(pop, how='inner',on='fips')
+
+county_data['percent_pop'] = 10*county_data.cases/county_data.Population
+latest2 = county_data.query("date=={}".format("'" + latestDate + "'"))
+top = latest2.percent_pop.max()
+
+
+fig_pop = px.choropleth_mapbox(latest2, geojson=counties, locations='fips', color='percent_pop',
+                           color_continuous_scale="matter",
+                           range_color=(0,top),
+                           mapbox_style="carto-positron",
+                           zoom=3, center = {"lat": 37.0902, "lon": -95.7129},
+                           opacity=1,
+                           labels={'county':'county'}
+                          )
+fig_pop.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
 
 
 
@@ -434,7 +464,58 @@ app.layout = html.Div(style={'backgroundColor': '#fafbfd'},
                                   ]),
                      ]),
 
-
+            html.Div(
+            id='dcc-map2',
+            style={'marginLeft': '1.5%', 'marginRight': '1.5%', 'backgroundColor': '#ffffff',
+                   'marginBottom': '.8%', 'marginTop': '.5%',
+                   'box-shadow':'0px 0px 10px #ededee', 'border': '1px solid #ededee'
+                },
+                 children=[
+                     html.Div(
+                         style={'width': '64%', 'display': 'inline-block',
+                                'marginRight': '.8%', 
+                                #'box-shadow':'0px 0px 10px #ededee', 'border': '1px solid #ededee'
+                                },
+                         children=[
+                                  html.H5(
+                                    id='dcc-map-graph-head',
+                                    style={'textAlign': 'center', 'backgroundColor': '#ffffff',
+                                           'color': '#292929', 'padding': '1rem', 'marginBottom': '0','marginTop': '0'},
+                                    children='Percentage of Population Infected'),
+                                  dcc.Graph(
+                                    style={'height': '300px'}, 
+                                    figure=fig_pop),
+                                    dbc.Tooltip(
+                                    '''
+                                    This chart represents the cumulative number of cases and deaths reported in the USA due to COVID-19.
+                                    ''',
+                                              target='dcc-map-graph-head',
+                                              style={"font-size":"1em"},
+                                             ),
+                                  ]),
+                     html.Div(
+                         style={'width': '34%', 'display': 'inline-block',
+                                
+                                #'box-shadow':'0px 0px 10px #ededee', 'border': '1px solid #ededee'
+                                },
+                         children=[
+                                  html.H5(
+                                    id='dcc-rate2-graph-head',
+                                    style={'textAlign': 'center', 'backgroundColor': '#ffffff',
+                                           'color': '#292929', 'padding': '1rem', 'marginBottom': '0','marginTop': '0'},
+                                    children='Daily Increases USA'),
+                                  dcc.Graph(
+                                    style={'height': '300px'}, 
+                                    figure=fig_daily),
+                                  dbc.Tooltip(
+                                    '''
+                                    This chart represents the daily number of increases in cases and deaths reported in the USA due to COVID-19.
+                                    ''',
+                                              target='dcc-rate2-graph-head',
+                                              style={"font-size":"1em"},
+                                             ),
+                                  ]),
+                     ]),
 
 
 
