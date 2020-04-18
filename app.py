@@ -264,8 +264,8 @@ app = dash.Dash(__name__,
             )
 
 app.title = 'United States of COVID-19'
+server = app.server
 
-# server = app.server#
 # app.config['suppress_callback_exceptions'] = True # This is to prevent app crash when loading since we have plot that only render when user clicks.
 
 
