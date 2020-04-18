@@ -5,4 +5,3 @@ dash_html_components
 dash_bootstrap_components
 pandas
 plotly
-json
