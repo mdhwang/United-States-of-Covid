@@ -106,7 +106,10 @@ fig_map = (px.choropleth_mapbox(latest, geojson=counties, locations='fips', colo
                            mapbox_style="carto-positron",
                            zoom=3, center = {"lat": 37.0902, "lon": -95.7129},
                            opacity=1,
-                           labels={'county':'county'}
+                           labels={'state':'state',
+                                'county':'county',
+                                'cases':'cases',
+                                'deaths':'deaths'}, 
                           ))
 fig_map.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
 
@@ -120,12 +123,9 @@ fig_combo.add_trace(go.Scatter(x=total.index, y=total.cases,
                                name='Total Cases USA',
                          marker=dict(size=2, color='#d7191c',
                                             line=dict(width=.5, color='#e36209')),
-                                text=total.index,
                                 hovertext=['Total Cases<br>{:,d}<br>'.format(
                                     i) for i in total.cases],
-                                hovertemplate='<b>%{text}</b><br></br>' +
-                                              '%{hovertext}' +
-                                              '<extra></extra>'      
+                                hovertemplate='%{hovertext}' + '<extra></extra>'    
                         ))
 
 fig_combo.add_trace(go.Scatter(x=total.index, y=total.deaths,
@@ -133,12 +133,9 @@ fig_combo.add_trace(go.Scatter(x=total.index, y=total.deaths,
                                name = 'Total Deaths USA',
                          marker=dict(size=2, color='#626262',
                                             line=dict(width=.5, color='#626262')),
-                                text=total.index,
                                 hovertext=['Total Deaths<br>{:,d}<br>'.format(
                                     i) for i in total.deaths],
-                                hovertemplate='<b>%{text}</b><br></br>' +
-                                              '%{hovertext}' +
-                                              '<extra></extra>'
+                                hovertemplate='%{hovertext}' + '<extra></extra>' 
                               ))
 fig_combo.update_layout(
     margin=go.layout.Margin(
@@ -162,7 +159,7 @@ fig_combo.update_layout(
         zeroline=False
     ),
     xaxis_tickformat='%b %d',
-    hovermode='x',
+    hovermode='x unified',
     legend_orientation="h",
     plot_bgcolor='#ffffff',
     paper_bgcolor='#ffffff',
@@ -175,15 +172,12 @@ fig_daily = go.Figure()
 
 fig_daily.add_trace(go.Scatter(x=new.index, y=new.case_increase,
                     mode='lines+markers',
-                               name='New Cases USA',
-                         marker=dict(size=2, color='#d7191c',
-                                            line=dict(width=.5, color='#e36209')),
-                                text=total.index,
-                                hovertext=['New Cases<br>{:,d}<br>'.format(
-                                    int(i)) for i in new.case_increase],
-                                hovertemplate='<b>%{text}</b><br></br>' +
-                                              '%{hovertext}' +
-                                              '<extra></extra>'
+                    name='New Cases USA',
+                    marker=dict(size=2, color='#d7191c',
+                                line=dict(width=.5, color='#e36209')),
+                    hovertext=['New Cases<br>{:,d}<br>'.format(
+                                int(i)) for i in new.case_increase],
+                    hovertemplate='%{hovertext}' + '<extra></extra>' 
                         
                         
                         
@@ -197,9 +191,7 @@ fig_daily.add_trace(go.Scatter(x=new.index, y=new.death_increase,
                                 text=total.index,
                                 hovertext=['New Deaths<br>{:,d}<br>'.format(
                                     int(i)) for i in new.death_increase],
-                                hovertemplate='<b>%{text}</b><br></br>' +
-                                              '%{hovertext}' +
-                                              '<extra></extra>'
+                                hovertemplate='%{hovertext}' + '<extra></extra>' 
                               ))
 fig_daily.update_layout(
     margin=go.layout.Margin(
@@ -224,7 +216,7 @@ fig_daily.update_layout(
         zeroline=False
     ),
     xaxis_tickformat='%b %d',
-    hovermode='x',
+    hovermode='x unified',
     legend_orientation="h",
     plot_bgcolor='#ffffff',
     paper_bgcolor='#ffffff',
@@ -608,7 +600,9 @@ app.layout = html.Div(style={'backgroundColor': '#fafbfd'},
                      
             html.Div(style={'textAlign': 'center'},
                 children=[
-                    html.H3('Stay safe out in them streets.  Keep your distance and wash your hands.'),
+                    html.Br(),
+                    html.H3('Stay safe out in them streets.  Keep your distance and most importantly:'),
+                    html.H2('Wash 👏 Your 👏 Hands 👏 '),
                     html.A('www.THWDesigns.com',href='https://thwdesigns.com'),
                 ]),
 
