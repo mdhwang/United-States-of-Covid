@@ -9,6 +9,8 @@ Since then, we've been in an endless 24/7 permanent press spin cycle of COVID ne
 To help visualize it I created a website that serves as an interactive dashboard that automatically tracks daily cases as published by the New York Times.
 
 Go check it out at [https://united-states-of-covid.herokuapp.com/](https://united-states-of-covid.herokuapp.com/)
+<br>
+(Note: Might take a little to load since it's on the free tier of Heroku 😬)
 
 ![Website_Overview](/images/Website_Overview.png)
 
@@ -29,11 +31,18 @@ Finally is a overall case map and table with all the data that was collected so 
 Go check it out at [https://united-states-of-covid.herokuapp.com/](https://united-states-of-covid.herokuapp.com/)
 
 Stay safe out in them streets. Keep your distance and most importantly:
-Wash 👏 Your 👏 Hands 👏
-
+### Wash 👏 Your 👏 Hands 👏
+<br>
 [www.THWDesigns.com](https://www.thwdesigns.com)
+<br>
 
+<br>
+
+___
 Shout out to the below GitHub repos for inspiration.
 
-Perishleaf Project
-NYT Github
+[Perishleaf Project](https://github.com/Perishleaf/data-visualisation-scripts/tree/master/dash-2019-coronavirus)
+
+<br>
+
+[New York Times Github](https://github.com/nytimes/covid-19-data)
