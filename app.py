@@ -7,6 +7,8 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 from datetime import datetime, timedelta
 
+from dash.dependencies import Input, Output
+
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -605,6 +607,11 @@ app.layout = html.Div(style={'backgroundColor': '#fafbfd'},
                     html.H2('Wash 👏 Your 👏 Hands 👏 '),
                     html.A('www.THWDesigns.com',href='https://thwdesigns.com'),
                 ]),
+                
+            html.Div(style={'textAlign': 'center'},
+            children=[
+                html.Iframe(src=f'https://www.youtube.com/embed/m2s0nB2VPvs')
+            ]),
 
             # FOOTER START
             html.Div(style={'textAlign': 'center'},
@@ -617,8 +624,10 @@ app.layout = html.Div(style={'backgroundColor': '#fafbfd'},
                     html.Br(),
                     html.A('NYT Github',href='https://github.com/nytimes/covid-19-data'),
                 ]),
+            
 
 ])
+
 
 if __name__ == '__main__':
     # change host from the default to '0.0.0.0' to make it publicly available
