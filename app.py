@@ -33,8 +33,28 @@ except:
     county_data = pd.read_csv('data/data/us-counties.csv',dtype={"fips": str})
     state_data = pd.read_csv('data/data/us-states.csv',dtype={"fips": str})
     print("Could not get latest NYT Data, falling back to local 4-3-20 data")
-county_data = county_data.dropna()
-state_data = state_data.dropna()
+
+
+# NYC FIX
+blank = county_data[county_data.county == "New York City"].copy()
+
+burrs = ["36061", "36047", "36081", "36005", "36085"]
+names = {"36061":'Manhattan',
+         "36047":'Brooklyn', 
+         "36081":'Queens', 
+         "36005":'Bronx', 
+         "36085":'Staten Island'}
+nyc_pop = 8400000
+for each in burrs:
+    test = blank.copy()
+    test.fips = each
+    test.county = names[each]
+    test.cases = test.cases.apply(lambda x: int(x/5))
+    test.deaths = test.deaths.apply(lambda x: int(x/5))
+    county_data = county_data.append(test)
+
+# county_data = county_data.dropna()
+# state_data = state_data.dropna()
 
 
 # CALCULATED VALUES
@@ -108,10 +128,8 @@ fig_map = (px.choropleth_mapbox(latest, geojson=counties, locations='fips', colo
                            mapbox_style="carto-positron",
                            zoom=3, center = {"lat": 37.0902, "lon": -95.7129},
                            opacity=1,
-                           labels={'state':'state',
-                                'county':'county',
-                                'cases':'cases',
-                                'deaths':'deaths'}, 
+                           hover_name = 'county',
+                           hover_data = ['cases']
                           ))
 fig_map.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
 
@@ -234,7 +252,7 @@ pop.columns = ['Population']
 pop.index = census.fips
 county_pop = pop.to_dict()
 
-county_data = county_data.merge(pop, how='inner',on='fips')
+county_data = county_data.merge(pop, how='outer',on='fips')
 
 county_data['percent_pop'] = round(10*county_data.cases/county_data.Population,2)
 latest2 = county_data.query("date=={}".format("'" + latestDate + "'"))
@@ -247,7 +265,8 @@ fig_pop = px.choropleth_mapbox(latest2, geojson=counties, locations='fips', colo
                            mapbox_style="carto-positron",
                            zoom=3, center = {"lat": 37.0902, "lon": -95.7129},
                            opacity=1,
-                           hover_name = 'county'
+                           hover_name = 'county',
+                           hover_data = ['cases','Population','percent_pop']
                           )
 fig_pop.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
 
