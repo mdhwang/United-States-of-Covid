@@ -247,6 +247,7 @@ fig_pop = px.choropleth_mapbox(latest2, geojson=counties, locations='fips', colo
                            mapbox_style="carto-positron",
                            zoom=3, center = {"lat": 37.0902, "lon": -95.7129},
                            opacity=1,
+                           hover_name = 'county'
                           )
 fig_pop.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
 
