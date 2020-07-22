@@ -13,6 +13,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+import numpy as np
+
 import json
 geo_json_path = 'data/geo_data/geojson-counties-fips.json'
 with open(geo_json_path,'r') as response:
@@ -115,6 +117,40 @@ state_summary.index = latest_state_data.state
 
 cols = ['state','county','cases','deaths']
 county_summary = latest[cols].copy()
+
+## STATE CHART DATA
+
+states = np.sort(state_data.state.unique())
+
+# print(states)
+# print(len(states))
+
+state_fig = make_subplots(rows = 11, 
+                    cols = 5,
+                    subplot_titles = states)
+
+for i,each in enumerate(states):
+    plus = i + 1
+    row = i // 5 + 1
+    col = i % 5 + 1
+    data = state_data[state_data.state == each]
+
+    state_fig.add_trace(go.Scatter(x = data.date, 
+                             y = data.cases,
+                            line = dict(color = 'firebrick', 
+                                        width = 2)
+                            ),
+        row=row, 
+        col=col
+    ),
+
+state_fig.update_layout(
+    width = 1200,
+    height = 2400,
+    showlegend = False
+)
+
+
 
 ################################################################################################
 ############ GENERATE PLOTS  ###################################################################
@@ -620,6 +656,22 @@ app.layout = html.Div(style={'backgroundColor': '#fafbfd'},
                                     ]),
                               ]),
                      
+
+            html.Div(
+                id='statechart',
+                children=[
+                    dcc.Graph(
+                        style={'height': '2400px'}, 
+                        figure=state_fig
+                    )
+                ]
+            ),
+
+
+
+
+
+
             html.Div(style={'textAlign': 'center'},
                 children=[
                     html.Br(),

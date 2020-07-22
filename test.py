@@ -32,9 +32,11 @@ for i,each in enumerate(states):
     row = i // 5 + 1
     col = i % 5 + 1
     data = state_data[state_data.state == each]
+    
     fig.add_trace(go.Scatter(x = data.date, 
                              y = data.cases,
-                            name = 'Case Load Over Time for {}'.format(each)
+                            line = dict(color = 'firebrick', 
+                                        width = 2)
                             ),
         row=row, 
         col=col
