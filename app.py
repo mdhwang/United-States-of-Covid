@@ -660,11 +660,17 @@ app.layout = html.Div(style={'backgroundColor': '#fafbfd'},
             html.Div(
                 id='statechart',
                 children=[
+                    html.Br(),
+                    html.H1('Individual State Case Load Over Time'),
+                    html.Hr(),
                     dcc.Graph(
                         style={'height': '2400px'}, 
                         figure=state_fig
                     )
-                ]
+                ],
+                style={
+                'textAlign': 'center',
+                }
             ),
 
 
