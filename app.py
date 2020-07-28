@@ -6,6 +6,7 @@ import dash_html_components as html
 import dash_bootstrap_components as dbc
 import pandas as pd
 from datetime import datetime, timedelta
+from helpers import *
 
 from dash.dependencies import Input, Output
 
@@ -134,10 +135,12 @@ for i,each in enumerate(states):
     row = i // 5 + 1
     col = i % 5 + 1
     data = state_data[state_data.state == each]
+    d = 3
+    color = last_week_today(each, d, data)
 
     state_fig.add_trace(go.Scatter(x = data.date, 
                              y = data.cases,
-                            line = dict(color = 'firebrick', 
+                            line = dict(color = color, 
                                         width = 2)
                             ),
         row=row, 
