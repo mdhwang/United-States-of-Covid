@@ -20,8 +20,8 @@ except:
 
 states = np.sort(state_data.state.unique())
 
-print(states)
-print(len(states))
+# print(states)
+# print(len(states))
 
 fig = make_subplots(rows = 11, 
                     cols = 5,
@@ -32,7 +32,7 @@ for i,each in enumerate(states):
     row = i // 5 + 1
     col = i % 5 + 1
     data = state_data[state_data.state == each]
-    
+
     fig.add_trace(go.Scatter(x = data.date, 
                              y = data.cases,
                             line = dict(color = 'firebrick', 
