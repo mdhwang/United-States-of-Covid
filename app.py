@@ -472,6 +472,9 @@ app.layout = html.Div(style={'backgroundColor': '#fafbfd'},
                                            'color': '#292929', 'padding': '0.5rem', 'marginBottom': '0','marginTop': '0'},
                                     children='''Calculated percent of population per county based on latest confirmed cases 
                                                 over estimated population based on 2019 US Census data.'''),
+                                  html.P(
+                                    style={'textAlign': 'center'},
+                                    children = 'Note: Blank counties are due to non-participating areas/hospitals that NYT does not have access to.'),
                                   html.Hr(),
                                   dcc.Graph(
                                     style={'height': '600px'}, 
@@ -664,8 +667,10 @@ app.layout = html.Div(style={'backgroundColor': '#fafbfd'},
                 id='statechart',
                 children=[
                     html.Br(),
-                    html.H1('Individual State Case Load Over Time'),
+                    html.H1('Individual State Case Counts'),
                     html.Hr(),
+                    html.H2('Below are the individual state COVID case load over time.'),
+                    html.H3('States are additionally color coded to show the case rate over the prior three days.  Ranging from deep red (three consecutive days of increasing rate) to deep green (three consecutive days of decreasing rate'),
                     dcc.Graph(
                         style={'height': '2400px'}, 
                         figure=state_fig
@@ -681,7 +686,8 @@ app.layout = html.Div(style={'backgroundColor': '#fafbfd'},
 
 
 
-            html.Div(style={'textAlign': 'center'},
+            html.Div(
+                style={'textAlign': 'center'},
                 children=[
                     html.Br(),
                     html.H3('Stay safe out in them streets.  Keep your distance and most importantly:'),
@@ -689,10 +695,12 @@ app.layout = html.Div(style={'backgroundColor': '#fafbfd'},
                     html.A('www.THWDesigns.com',href='https://thwdesigns.com'),
                 ]),
                 
-            html.Div(style={'textAlign': 'center'},
-            children=[
-                html.Iframe(src=f'https://www.youtube.com/embed/m2s0nB2VPvs')
-            ]),
+            html.Div(
+                style={'textAlign': 'center'},
+                children=[
+                    html.Br(),
+                    html.Iframe(src=f'https://www.youtube.com/embed/m2s0nB2VPvs')
+                ]),
 
             # FOOTER START
             html.Div(style={'textAlign': 'center'},
