@@ -24,9 +24,14 @@ There are also two charts that track the timeline of case and death count since 
 
 ![Daily_Tracker](/images/Daily_Increase_Timeline.png)
 
-Finally is a overall case map and table with all the data that was collected so far.
+Next is a overall case map and table with all the data that was collected so far.
 
 ![Cumulative_Case_Map](/images/Case_Table.png)
+
+Finally, a table consisting of each of the individual state's case loads over time is displayed.  Further, they are color coded based on rate changes of the previous three days.  Ranging from deep red for three consecutive days of case increases to deep green for three consecutive days of case decreases.
+
+![state](/images/statecases.png)
+
 
 Go check it out at [https://united-states-of-covid.herokuapp.com/](https://united-states-of-covid.herokuapp.com/)
 
