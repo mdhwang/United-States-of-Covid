@@ -30,7 +30,7 @@ Next is a overall case map and table with all the data that was collected so far
 
 Finally, a table consisting of each of the individual state's case loads over time is displayed.  Further, they are color coded based on rate changes of the previous three days.  Ranging from deep red for three consecutive days of case increases to deep green for three consecutive days of case decreases.
 
-![color](/images/colortable.png)
+![color](/images/color_table.png)
 
 ![state](/images/statecases.png)
 
